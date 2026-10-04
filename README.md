@@ -1,1 +1,1 @@
-# CampusParkingWeb
+# UC Merced Campus Parking
