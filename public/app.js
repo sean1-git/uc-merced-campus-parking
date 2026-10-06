@@ -1,6 +1,6 @@
 import {readSnapshot} from './parking-data.mjs';
 
-const REFRESH_INTERVAL_MS = 10000;
+const REFRESH_INTERVAL_MS = 60000;
 const REQUEST_TIMEOUT_MS = 6000;
 const STALE_AFTER_MS = 60000;
 
@@ -11,6 +11,7 @@ let selectedLotId = null;
 let updatedAt = null;
 let loading = false;
 let dataError = false;
+let previousCounts = null;
 
 function showNotice(message) {
   byId('connection').textContent = message;
@@ -85,9 +86,16 @@ async function loadParking() {
       throw new Error('Older parking update');
     }
     dataError = false;
-    lots = snapshot.lots;
+    const counts = JSON.stringify(snapshot.lots);
     updatedAt = snapshot.updatedAt;
-    renderDashboard();
+    // Keep the current lot buttons and selection when the counts have not changed.
+    if (counts !== previousCounts) {
+      lots = snapshot.lots;
+      previousCounts = counts;
+      renderDashboard();
+    } else {
+      updateFreshness();
+    }
   } catch {
     dataError = true;
     byId('data-status').textContent = updatedAt === null ? 'Waiting for data' : 'Last reported counts';

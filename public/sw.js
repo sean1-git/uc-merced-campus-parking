@@ -1,5 +1,5 @@
 // Change the version when updating any file in APP_FILES.
-const CACHE_NAME = 'campus-parking-v10';
+const CACHE_NAME = 'campus-parking-v11';
 const APP_FILES = [
   '/',
   '/index.html',
