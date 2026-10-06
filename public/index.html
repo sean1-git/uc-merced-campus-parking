@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#102d3c">
+    <meta name="description" content="A simple campus parking prototype with a map and sample lot availability.">
+    <title>Campus Parking · UC Merced demo</title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" href="/icon-32.png" type="image/png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer>
+    </script>
+    <script src="/pwa.js" defer>
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to parking dashboard</a>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Campus Parking home">
+        <img class="brand-mark" src="/icon-192.png" alt="Bobcat driving a parking car" width="60" height="60">
+        <span>
+          Campus Parking
+          <small>UC MERCED · STUDENT PROTOTYPE</small>
+        </span>
+      </a>
+      <button class="install" id="install">
+        Install app
+        <span aria-hidden="true">↗</span>
+      </button>
+    </header>
+    <main id="main">
+      <section class="intro">
+        <div>
+          <h1>Parking availability</h1>
+          <p class="subtitle">Choose a lot to view available spaces.</p>
+        </div>
+        <div class="snapshot">
+          <span class="demo-badge">
+            <span aria-hidden="true">●</span>
+            Demo data
+          </span>
+          <p id="updated">Loading sample availability…</p>
+          <button id="refresh" class="refresh">↻ Refresh counts</button>
+        </div>
+      </section>
+      <div class="notice" id="connection" role="status" hidden>
+      </div>
+      <div class="notice" id="install-help" role="status" hidden>
+      </div>
+      <section class="stats" aria-label="Parking overview">
+        <article>
+          <span class="stat-label">Spaces available</span>
+          <strong id="total">—</strong>
+          <small>across all demo lots</small>
+        </article>
+        <article>
+          <span class="stat-label">Lots with space</span>
+          <strong id="open-lots">—</strong>
+          <small>choose one below</small>
+        </article>
+        <article>
+          <span class="stat-label">Closest with space</span>
+          <strong class="closest" id="closest">—</strong>
+          <small id="closest-walk">estimated walk to campus center</small>
+        </article>
+      </section>
+      <div class="workspace">
+        <section class="lot-panel" aria-labelledby="lots-heading">
+          <div class="section-heading">
+            <h2 id="lots-heading">Choose a lot</h2>
+            <span id="lot-count">4 lots</span>
+          </div>
+          <p class="section-note">Select a lot to see it on the map.</p>
+          <div id="lots" class="lots">
+            <p class="loading">Loading lots…</p>
+          </div>
+          <div class="lot-detail" id="detail" aria-live="polite" hidden>
+            <div class="detail-title">
+              <span id="detail-name">
+              </span>
+              <span id="detail-walk">
+              </span>
+            </div>
+            <p>
+              <strong id="detail-count">
+              </strong>
+              spaces available
+            </p>
+            <div class="meter" id="detail-meter" role="meter" aria-label="Available spaces" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0">
+              <span>
+              </span>
+            </div>
+            <p id="detail-note">
+            </p>
+          </div>
+        </section>
+        <section class="map-panel" aria-labelledby="map-heading">
+          <div class="section-heading">
+            <h2 id="map-heading">Campus map</h2>
+            <span class="map-tag">SAMPLE MAP</span>
+          </div>
+          <div class="map-surface">
+            <svg class="campus-map" viewBox="0 0 800 540" role="img" aria-labelledby="map-title map-desc">
+              <title id="map-title">Illustrative campus parking map</title>
+              <desc id="map-desc">North lot is at the top, Lake lot to the east, South lot at the bottom, and Bellevue lot to the west. Use the overlaid lot buttons to select. This is not an accurate geographic map.</desc>
+              <defs>
+                <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+                  <path d="M30 0H0V30" fill="none" stroke="#dce3d7" stroke-width=".7"/>
+                </pattern>
+                <pattern id="parking" width="14" height="22" patternUnits="userSpaceOnUse">
+                  <path d="M0 0V18H12V0" stroke="#bac4b7" stroke-width="1" fill="none"/>
+                </pattern>
+              </defs>
+              <rect width="800" height="540" fill="#eaf0e4"/>
+              <rect width="800" height="540" fill="url(#grid)"/>
+              <path d="M685 0C643 81 735 119 675 176S623 260 716 290 804 236 800 195V0Z" fill="#b9d8dc"/>
+              <path d="M698 0C653 81 745 115 685 179S639 249 722 280" fill="none" stroke="#d5e8e6" stroke-width="8"/>
+              <path d="M-20 446H795M190 -10V554M190 119H592V445" stroke="#d5d9cf" stroke-width="34" fill="none" stroke-linejoin="round"/>
+              <path d="M-20 446H795M190 -10V554M190 119H592V445" stroke="#fafbf5" stroke-width="24" fill="none" stroke-linejoin="round"/>
+              <path d="M190 278H592M396 119V446" stroke="#fdfbf1" stroke-width="14" fill="none"/>
+              <path d="M396 165V402M229 278H557" stroke="#c5ccb9" stroke-width="2" stroke-dasharray="4 7" fill="none"/>
+              <g fill="#d1d7c9" stroke="#bcc7b8" stroke-width="2">
+                <rect x="259" y="183" width="92" height="53" rx="5"/>
+                <rect x="432" y="181" width="101" height="56" rx="5"/>
+                <rect x="257" y="320" width="74" height="68" rx="5"/>
+                <path d="M442 323H533V380H505V350H442Z"/>
+                <rect x="458" y="53" width="75" height="31" rx="4"/>
+              </g>
+              <g fill="#aac3a0" opacity=".75">
+                <circle cx="234" cy="175" r="13"/>
+                <circle cx="363" cy="206" r="10"/>
+                <circle cx="558" cy="182" r="13"/>
+                <circle cx="555" cy="369" r="12"/>
+                <circle cx="355" cy="369" r="11"/>
+                <circle cx="236" cy="365" r="11"/>
+                <circle cx="481" cy="410" r="9"/>
+                <circle cx="333" cy="411" r="10"/>
+                <circle cx="89" cy="376" r="21"/>
+                <circle cx="112" cy="398" r="16"/>
+                <circle cx="90" cy="155" r="20"/>
+                <circle cx="125" cy="142" r="16"/>
+                <circle cx="677" cy="385" r="22"/>
+                <circle cx="707" cy="368" r="16"/>
+              </g>
+              <g fill="url(#parking)" stroke="#c0cabc">
+                <rect x="268" y="36" width="135" height="64" rx="5"/>
+                <rect x="613" y="288" width="114" height="58" rx="5"/>
+                <rect x="307" y="471" width="174" height="56" rx="5"/>
+                <rect x="50" y="228" width="99" height="103" rx="5"/>
+              </g>
+              <circle cx="396" cy="278" r="24" fill="#f9fbf3" stroke="#cbd6be" stroke-width="2"/>
+              <circle cx="396" cy="278" r="6" fill="#a78a40"/>
+              <g font-family="system-ui, sans-serif" text-anchor="middle" fill="#627668" font-size="12">
+                <text x="396" y="308">Campus center</text>
+                <text x="302" y="217">Learning</text>
+                <text x="482" y="213">Library</text>
+                <text x="717" y="111" fill="#577b85">Lake</text>
+                <text x="634" y="478" letter-spacing="3" font-size="10">CAMPUS LOOP</text>
+              </g>
+            </svg>
+            <div id="map-pins" class="map-pins" aria-label="Select a parking lot on the map">
+            </div>
+            <div class="north" aria-hidden="true">
+              N
+              <span>↑</span>
+            </div>
+            <span class="map-disclaimer">Illustrative only · Not for navigation</span>
+          </div>
+          <div class="legend">
+            <span>
+              <i class="dot available">
+              </i>
+              Available
+            </span>
+            <span>
+              <i class="dot limited">
+              </i>
+              Limited
+            </span>
+            <span>
+              <i class="dot full">
+              </i>
+              Full
+            </span>
+            <span class="legend-hint">Select a lot</span>
+          </div>
+        </section>
+      </div>
+      <footer>
+        <span>Sample data. Lot locations, counts and walking times are not official.</span>
+      </footer>
+      <noscript>
+        <p>This prototype needs JavaScript to load availability and select lots.</p>
+      </noscript>
+    </main>
+    <!-- JavaScript fills these templates with parking data. -->
+    <template id="lot-card-template">
+      <button class="lot-card" aria-pressed="false">
+        <span>
+          <span class="lot-title">
+          </span>
+          <span class="lot-zone">
+          </span>
+        </span>
+        <span class="lot-count">
+          <strong>
+          </strong>
+          <span class="lot-status">
+            <i class="dot" aria-hidden="true">
+            </i>
+            <span class="status-label">
+            </span>
+          </span>
+        </span>
+      </button>
+    </template>
+    <template id="map-pin-template">
+      <button class="pin" aria-pressed="false">
+        <span>
+        </span>
+        <strong>
+        </strong>
+      </button>
+    </template>
+  </body>
+</html>
