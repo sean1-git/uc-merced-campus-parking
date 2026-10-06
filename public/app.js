@@ -1,159 +1,134 @@
-// Dashboard data and lot selection. Offline/install code lives in pwa.js.
-const elements = {
-  total: document.getElementById('total'),
-  openLots: document.getElementById('open-lots'),
-  closest: document.getElementById('closest'),
-  closestWalk: document.getElementById('closest-walk'),
-  lotCount: document.getElementById('lot-count'),
-  lots: document.getElementById('lots'),
-  mapPins: document.getElementById('map-pins'),
-  detail: document.getElementById('detail'),
-  updated: document.getElementById('updated'),
-  connection: document.getElementById('connection'),
-  refresh: document.getElementById('refresh'),
-};
+import {readSnapshot} from './parking-data.mjs';
 
+const REFRESH_INTERVAL_MS = 10000;
+const REQUEST_TIMEOUT_MS = 6000;
+const STALE_AFTER_MS = 60000;
+
+const byId = (id) => document.getElementById(id);
+const frame = byId('campus-map');
 let lots = [];
-let selectedLotId = 'north';
-let isLoading = false;
-let saveAfterLoading = false;
+let selectedLotId = null;
+let updatedAt = null;
+let loading = false;
+let dataError = false;
 
-function getAvailabilityStatus(lot) {
-  if (lot.available === 0) return 'full';
-  if (lot.available / lot.capacity <= 0.15) return 'limited';
-  return 'available';
+function showNotice(message) {
+  byId('connection').textContent = message;
+  byId('connection').hidden = !message;
 }
 
-function updateSummary() {
-  const availableLots = lots.filter((lot) => lot.available > 0);
-  const closestLot = availableLots.sort((a, b) => a.walk - b.walk)[0];
+function updateFreshness() {
+  if (updatedAt === null) return;
+  const stale = !navigator.onLine || dataError || Date.now() - updatedAt > STALE_AFTER_MS;
+  byId('data-status').textContent = stale ? 'Last reported counts' : 'Receiving data';
+  byId('updated').textContent = `Reported ${new Date(updatedAt).toLocaleString()}`;
+  if (!dataError) showNotice(stale ? 'These counts may be outdated. Waiting for a new parking update.' : '');
+}
 
-  elements.total.textContent = lots.reduce((total, lot) => total + lot.available, 0);
-  elements.openLots.textContent = `${availableLots.length} / ${lots.length}`;
-  elements.lotCount.textContent = `${lots.length} lots`;
-  elements.closest.textContent = closestLot ? closestLot.name : 'All lots full';
-  elements.closestWalk.textContent = closestLot
-    ? `${closestLot.walk} min walk to campus center`
-    : 'Check again later';
+function selectLot(id) {
+  selectedLotId = id;
+  const lot = lots.find((item) => item.id === id);
+  byId('detail').hidden = !lot;
+  document.querySelectorAll('.lot-card').forEach((card) => {
+    card.setAttribute('aria-pressed', String(card.dataset.lot === id));
+  });
+  if (!lot) return;
+  byId('detail-name').textContent = lot.name;
+  byId('detail-count').textContent = lot.available;
+  byId('detail-note').textContent = `${lot.occupied} occupied · ${lot.capacity} total spaces`;
+  const meter = byId('detail-meter');
+  meter.setAttribute('aria-valuemax', String(Math.max(1, lot.capacity)));
+  meter.setAttribute('aria-valuenow', String(lot.available));
+  meter.firstElementChild.style.width = `${lot.capacity ? lot.available / lot.capacity * 100 : 0}%`;
 }
 
 function createLotCard(lot) {
-  const template = document.getElementById('lot-card-template');
-  const card = template.content.firstElementChild.cloneNode(true);
-  const status = getAvailabilityStatus(lot);
-  const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
-
+  const card = byId('lot-card-template').content.firstElementChild.cloneNode(true);
   card.dataset.lot = lot.id;
-  card.setAttribute('aria-label', `${lot.name}, ${lot.available} spaces available, ${statusLabel}`);
   card.querySelector('.lot-title').textContent = lot.name;
-  card.querySelector('.lot-zone').textContent = lot.zone;
-  card.querySelector('.lot-count').classList.add(status);
+  card.querySelector('.lot-zone').textContent = `${lot.occupied} occupied`;
   card.querySelector('strong').textContent = lot.available;
-  card.querySelector('.status-label').textContent = statusLabel;
+  card.querySelector('.status-label').textContent = 'available';
+  card.querySelector('.lot-count').classList.toggle('available', lot.available > 0);
   card.addEventListener('click', () => selectLot(lot.id));
   return card;
 }
 
-function createMapPin(lot) {
-  const template = document.getElementById('map-pin-template');
-  const pin = template.content.firstElementChild.cloneNode(true);
-
-  pin.dataset.lot = lot.id;
-  pin.classList.add(`pin-${lot.id}`, getAvailabilityStatus(lot));
-  pin.setAttribute('aria-label', `Select ${lot.name}, ${lot.available} available`);
-  pin.querySelector('span').textContent = lot.name.replace(' Lot', '');
-  pin.querySelector('strong').textContent = lot.available;
-  pin.addEventListener('click', () => selectLot(lot.id));
-  return pin;
-}
-
-function selectLot(lotId) {
-  const lot = lots.find((item) => item.id === lotId);
-  if (!lot) return;
-  selectedLotId = lotId;
-
-  // The list and map always show the same selection.
-  document.querySelectorAll('[data-lot]').forEach((button) => {
-    button.setAttribute('aria-pressed', String(button.dataset.lot === lotId));
-  });
-
-  elements.detail.hidden = false;
-  document.getElementById('detail-name').textContent = lot.name;
-  document.getElementById('detail-walk').textContent = `${lot.walk} min walk`;
-  document.getElementById('detail-count').textContent = `${lot.available} of ${lot.capacity}`;
-  document.getElementById('detail-note').textContent = lot.available > 0
-    ? 'Estimated walk to campus center.'
-    : 'This lot is full. Choose another lot.';
-
-  const meter = document.getElementById('detail-meter');
-  meter.setAttribute('aria-label', `${lot.name} available spaces`);
-  meter.setAttribute('aria-valuemax', lot.capacity);
-  meter.setAttribute('aria-valuenow', lot.available);
-  meter.firstElementChild.style.width = `${lot.available / lot.capacity * 100}%`;
-}
-
 function renderDashboard() {
-  updateSummary();
-  elements.lots.replaceChildren(...lots.map(createLotCard));
-  elements.mapPins.replaceChildren(...lots.map(createMapPin));
-  selectLot(selectedLotId);
+  byId('total').textContent = lots.reduce((sum, lot) => sum + lot.available, 0);
+  byId('occupied').textContent = lots.reduce((sum, lot) => sum + lot.occupied, 0);
+  byId('lot-count').textContent = `${lots.length} lots`;
+  byId('lots').replaceChildren(...lots.map(createLotCard));
+  if (!lots.length) byId('lots').textContent = 'The file reports no parking lots.';
+
+  const selectedLotExists = lots.some((lot) => lot.id === selectedLotId);
+  selectLot(selectedLotExists ? selectedLotId : lots[0]?.id);
+  updateFreshness();
 }
 
-function showConnectionMessage(message) {
-  elements.connection.textContent = message;
-  elements.connection.hidden = !message;
+async function fetchJson(path) {
+  const response = await fetch(path, {
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    cache: 'no-store',
+  });
+  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+  return response.json();
 }
 
-async function loadLots() {
-  if (isLoading) return;
-  isLoading = true;
-  elements.refresh.disabled = true;
-
+async function loadParking() {
+  if (loading) return;
+  loading = true;
+  byId('refresh').disabled = true;
   try {
-    const response = await fetch('/api/lots', {
-      signal: AbortSignal.timeout(6000),
-    });
-    if (!response.ok) throw new Error('Could not load parking counts');
-
-    const data = await response.json();
-    lots = data.lots;
-    renderDashboard();
-
-    const isSavedData = response.headers.get('X-Parking-Offline') === '1';
-    const time = new Date(data.updated_at).toLocaleTimeString([], {
-      hour: 'numeric',
-      minute: '2-digit',
-    });
-    elements.updated.textContent = `${isSavedData ? 'Saved' : 'Updated'} ${time}`;
-    showConnectionMessage(isSavedData ? 'Offline. Saved counts may be out of date.' : '');
-  } catch {
-    showConnectionMessage(lots.length
-      ? 'Could not refresh. Showing the previous counts.'
-      : 'Could not load parking counts. Check your connection and try again.');
-    if (!lots.length) elements.lots.textContent = 'No parking data available.';
-    elements.updated.textContent = 'Unable to update';
-  } finally {
-    isLoading = false;
-    elements.refresh.disabled = false;
-    if (saveAfterLoading) {
-      saveAfterLoading = false;
-      loadLots();
+    const snapshot = readSnapshot(await fetchJson('/api/parking'));
+    if (updatedAt !== null && snapshot.updatedAt < updatedAt) {
+      throw new Error('Older parking update');
     }
+    dataError = false;
+    lots = snapshot.lots;
+    updatedAt = snapshot.updatedAt;
+    renderDashboard();
+  } catch {
+    dataError = true;
+    byId('data-status').textContent = updatedAt === null ? 'Waiting for data' : 'Last reported counts';
+    showNotice(updatedAt === null
+      ? 'Waiting for a valid parking data file. Retrying automatically.'
+      : 'Could not update parking data. Displayed counts may be outdated. Retrying automatically.');
+  } finally {
+    loading = false;
+    byId('refresh').disabled = false;
   }
 }
 
-elements.refresh.addEventListener('click', loadLots);
-window.addEventListener('online', loadLots);
+async function connectMap() {
+  try {
+    const config = await fetchJson('/api/config');
+    if (!config.map_url) return;
+    const url = new URL(config.map_url);
+    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) {
+      throw new Error('Use an HTTP(S) map URL');
+    }
+    frame.src = url.href;
+    frame.hidden = false;
+    byId('map-placeholder').hidden = true;
+  } catch {
+    byId('map-placeholder').querySelector('p').textContent = 'Map unavailable. Parking counts can still update independently.';
+  }
+}
+
+byId('refresh').addEventListener('click', loadParking);
 window.addEventListener('offline', () => {
-  showConnectionMessage(lots.length
-    ? 'Offline. Saved counts may be out of date.'
-    : 'Offline. Connect to load parking counts.');
+  dataError = true;
+  updateFreshness();
+  showNotice('You are offline. Any displayed parking counts may be outdated.');
 });
-
-// Load immediately; save a fresh response once offline support is ready.
-window.addEventListener('parking-offline-ready', () => {
-  if (isLoading) saveAfterLoading = true;
-  else loadLots();
+window.addEventListener('online', () => {
+  loadParking();
+  connectMap();
 });
-loadLots();
-
+setInterval(() => {
+  updateFreshness();
+  loadParking();
+}, REFRESH_INTERVAL_MS);
+loadParking();
+connectMap();

@@ -1,10 +1,11 @@
 // Change the version when updating any file in APP_FILES.
-const CACHE_NAME = 'campus-parking-v5';
+const CACHE_NAME = 'campus-parking-v10';
 const APP_FILES = [
   '/',
   '/index.html',
   '/styles.css',
   '/app.js',
+  '/parking-data.mjs',
   '/pwa.js',
   '/manifest.webmanifest',
   '/icon-32.png',
@@ -28,31 +29,6 @@ async function removeOldCaches() {
   await self.clients.claim();
 }
 
-async function getParkingCounts(request) {
-  const cache = await caches.open(CACHE_NAME);
-
-  // Try the server first. Use the saved response if it cannot be reached.
-  try {
-    const response = await fetch(request, {signal: AbortSignal.timeout(3500)});
-    if (!response.ok) throw new Error('Parking counts unavailable');
-    await cache.put('/api/lots', response.clone());
-    return response;
-  } catch {
-    const savedResponse = await cache.match('/api/lots');
-    if (!savedResponse) {
-      return new Response(JSON.stringify({error: 'No saved counts'}), {
-        status: 503,
-        headers: {'Content-Type': 'application/json'},
-      });
-    }
-
-    // Tell the dashboard these counts came from storage, not the server.
-    const headers = new Headers(savedResponse.headers);
-    headers.set('X-Parking-Offline', '1');
-    return new Response(await savedResponse.arrayBuffer(), {headers});
-  }
-}
-
 async function getAppFile(request) {
   const cache = await caches.open(CACHE_NAME);
   const path = new URL(request.url).pathname;
@@ -73,10 +49,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
 
-  if (url.pathname === '/api/lots') {
-    event.respondWith(getParkingCounts(request));
-  } else if (APP_FILES.includes(url.pathname)) {
+  if (APP_FILES.includes(url.pathname)) {
     event.respondWith(getAppFile(request));
   }
 });
-

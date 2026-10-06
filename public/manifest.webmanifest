@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "Campus Parking · UC Merced Demo",
+  "name": "Campus Parking · UC Merced",
   "short_name": "Campus Parking",
-  "description": "Illustrative campus parking availability prototype",
+  "description": "Campus parking availability",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

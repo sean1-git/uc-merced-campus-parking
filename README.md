@@ -1,62 +1,70 @@
 # Campus Parking
 
-A small parking demo built with Python, HTML, CSS and JavaScript. It shows four sample lots and how many spaces are available. The counts and map are not official campus data.
+A simple Python PWA with a campus map iframe and parking counts from a JSON file.
 
-## Run it
+## Run
 
-With Python 3.10 or newer:
+Run `python app.py` with Python 3.10 or newer, or `./run.ps1` on this Windows computer. Open http://127.0.0.1:8000. No packages or build step are required.
 
-```sh
-python app.py
+## Parking data
+
+Place the supplied file at `parking.json` beside `app.py`. Python reads it on each request to `/api/parking`; the dashboard checks every 10 seconds. Replacing the file updates the counts without restarting Python. The Refresh counts button checks immediately.
+
+Until the actual file is supplied, this is the expected format (illustrative values only):
+
+```json
+{
+  "updated_at": "2026-10-05T23:00:00Z",
+  "lots": [
+    {
+      "id": "lot-a",
+      "name": "Lot A",
+      "spaces": [
+        {"id": "1", "status": "available"},
+        {"id": "2", "status": "occupied"}
+      ]
+    }
+  ]
+}
 ```
 
-Then open http://127.0.0.1:8000. Stop the server with Ctrl+C.
+Only `available` and `occupied` are accepted. Lot IDs must be unique; space IDs must be unique within a lot. Each file is a complete snapshot. Update `updated_at` with the actual observation time. Counts older than 60 seconds are marked potentially outdated. Missing or invalid files leave the last valid counts visible with a warning; before the first valid file, counts show dashes.
 
-On this Windows computer, `./run.ps1` can also start it using the existing Python runtime. If port 8000 is busy, use `python app.py --port 8001`.
+The final supplied JSON structure may need an adapter. To use a different file path, set `PARKING_DATA_FILE` before starting Python. The producer should write a temporary file and replace the old file atomically to avoid partially written JSON.
 
-No packages or build step are needed to run the app.
+## Campus map
 
-The bobcat icon comes from the supplied PDF. Its original artwork is saved in `assets/parking-bobcat.png`. The ready-to-use icons are in `public/`. To regenerate those sizes, run `python make_icons.py` with Pillow installed; Pillow is only needed for this optional step.
+Set the iframe URL before starting the server:
 
-## How it works
+```powershell
+$env:PARKING_MAP_URL = 'https://your-map-provider.example/embed'
+./run.ps1
+```
 
-1. Python serves the page and sample parking data at `/api/lots`.
-2. JavaScript loads the data and calculates the dashboard totals.
-3. Selecting a lot in the list or map updates its details.
-4. The browser saves the page and counts for offline use. Saved counts are marked as potentially outdated.
+Replace this placeholder with the actual URL. The provider must allow your app to embed its map. The iframe displays the map independently of the JSON dashboard. No iframe messages or reading marker colors are required.
 
-“Limited” means 15% or fewer spaces remain. Refresh reloads the same sample data; there are no live sensors or AI features.
-
-## Where to make changes
+## Files
 
 | File | Purpose |
 | --- | --- |
-| `app.py` | Python server and sample `LOTS` data |
-| `public/index.html` | Page layout, map drawing and reusable lot templates |
-| `public/styles.css` | Desktop and mobile styles, grouped into sections |
-| `public/app.js` | Load counts, build lot buttons and handle selection |
-| `public/pwa.js` | App installation and offline setup |
-| `public/sw.js` | Save files and return cached data when offline |
-| `public/manifest.webmanifest` | Installed app name, colors and icons |
+| `app.py` | Serve public files, map configuration, and parking JSON |
+| `public/index.html` | Dashboard and map iframe |
+| `public/styles.css` | Desktop and mobile styles |
+| `public/app.js` | Refresh counts and select lots |
+| `public/parking-data.mjs` | Validate JSON and count available/occupied spaces |
+| `public/pwa.js` | Installation and service worker registration |
+| `public/sw.js` | Offline page shell and old-cache cleanup |
 
-To change parking counts, edit `LOTS` in `app.py`. To change the wording, edit `index.html`. To change the layout or colors, edit `styles.css`.
+The original bobcat image is in `assets/parking-bobcat.png`. `make_icons.py` regenerates icons using Pillow; Pillow is not needed to run the app.
 
-After changing browser files, increase `CACHE_NAME` in `sw.js` and reload the page so the browser replaces its saved copy. Python changes require restarting the server.
+## PWA and checks
 
-## Install and offline use
-
-Open the app online once before trying it offline. Use the browser's Install app option; on iPhone, use Safari → Share → Add to Home Screen.
-
-PWA installation requires HTTPS or localhost. A phone's localhost points to the phone, not your computer. Use HTTPS hosting to install it on a phone. The included Python server is for local development.
-
-## Check it
+Installation requires HTTPS or localhost. The page shell can reopen offline after an online visit; the map and fresh JSON require a connection. Counts are not saved between visits. Increase the service worker cache version after changing browser files and restart Python after server changes.
 
 ```sh
 python -m unittest -v
+node --test test_parking_data.mjs
 node --check public/app.js
-node --check public/pwa.js
-node --check public/sw.js
 ```
 
-In the browser, check that map and list selections match, full lots show zero spaces, and the page still opens with saved counts after stopping the server.
-
+The real JSON file and iframe URL are still needed for provider integration testing. Traffic testing comes later. The included Python server is for local development.

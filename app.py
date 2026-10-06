@@ -1,53 +1,18 @@
-"""Small, dependency-free parking PWA demo. Run: python app.py."""
+"""Small, dependency-free parking PWA. Run: python app.py."""
 import argparse
 import json
-from datetime import datetime, timezone
+import os
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
 
-PUBLIC = Path(__file__).parent / 'public'
+ROOT = Path(__file__).resolve().parent
+PUBLIC = ROOT / 'public'
+DEFAULT_DATA_FILE = ROOT / 'parking.json'
 PUBLIC_ROUTES = {
     '/', '/index.html', '/styles.css', '/app.js', '/pwa.js', '/sw.js',
-    '/manifest.webmanifest', '/icon-32.png', '/icon-192.png', '/icon-512.png',
+    '/parking-data.mjs', '/manifest.webmanifest', '/icon-32.png', '/icon-192.png', '/icon-512.png',
 }
-
-# Sample data only. Change these values to update the demo.
-LOTS = [
-    {
-        "id": "north",
-        "name": "North Lot",
-        "zone": "North campus",
-        "available": 42,
-        "capacity": 120,
-        "walk": 4
-    },
-    {
-        "id": "lake",
-        "name": "Lake Lot",
-        "zone": "East campus",
-        "available": 8,
-        "capacity": 80,
-        "walk": 6
-    },
-    {
-        "id": "south",
-        "name": "South Lot",
-        "zone": "South campus",
-        "available": 78,
-        "capacity": 200,
-        "walk": 8
-    },
-    {
-        "id": "bellevue",
-        "name": "Bellevue Lot",
-        "zone": "West campus",
-        "available": 0,
-        "capacity": 140,
-        "walk": 10
-    }
-]
-
 
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -60,21 +25,35 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         path = urlsplit(self.path).path
-        if path == '/api/lots':
-            self.send_parking_counts()
+        if path == '/api/config':
+            self.send_config()
+        elif path == '/api/parking':
+            self.send_parking_data()
         elif path in PUBLIC_ROUTES:
             super().do_GET()
         else:
             self.send_error(404)
 
-    def send_parking_counts(self):
-        data = {
-            'demo': True,
-            'updated_at': datetime.now(timezone.utc).isoformat(),
-            'lots': LOTS,
-        }
+    def send_config(self):
+        data = {'map_url': os.environ.get('PARKING_MAP_URL', '')}
+        self.send_json(data)
+
+    def send_parking_data(self):
+        # Read on every request so replacing the file needs no server restart.
+        path = Path(os.environ.get('PARKING_DATA_FILE', str(DEFAULT_DATA_FILE)))
+        try:
+            data = json.loads(path.read_text(encoding='utf-8-sig'))
+        except FileNotFoundError:
+            self.send_json({'error': 'Waiting for parking.json'}, 503)
+            return
+        except (OSError, ValueError):
+            self.send_json({'error': 'Parking file is unavailable or invalid'}, 503)
+            return
+        self.send_json(data)
+
+    def send_json(self, data, status=200):
         payload = json.dumps(data).encode('utf-8')
-        self.send_response(200)
+        self.send_response(status)
         self.send_header('Content-Type', 'application/json; charset=utf-8')
         self.send_header('Content-Length', str(len(payload)))
         self.end_headers()
@@ -87,7 +66,7 @@ def main():
     parser.add_argument('--host', default='127.0.0.1')
     args = parser.parse_args()
     server = ThreadingHTTPServer((args.host, args.port), Handler)
-    print(f'Parking demo: http://{args.host}:{args.port}', flush=True)
+    print(f'Campus Parking: http://{args.host}:{args.port}', flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

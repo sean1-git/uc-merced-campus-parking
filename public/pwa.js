@@ -35,15 +35,6 @@ async function enableOfflineSupport() {
 
   try {
     await navigator.serviceWorker.register('/sw.js');
-    await navigator.serviceWorker.ready;
-
-    // Wait until this page's requests go through the service worker.
-    if (!navigator.serviceWorker.controller) {
-      await new Promise((resolve) => {
-        navigator.serviceWorker.addEventListener('controllerchange', resolve, {once: true});
-      });
-    }
-    window.dispatchEvent(new Event('parking-offline-ready'));
   } catch {
     installHelp.hidden = false;
     installHelp.textContent = 'Offline mode is unavailable. You can still use the dashboard online.';
