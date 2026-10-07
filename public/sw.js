@@ -1,9 +1,7 @@
 // Change the version when updating any file in APP_FILES.
-const CACHE_NAME = 'campus-parking-v25';
+const CACHE_NAME = 'campus-parking-v26';
 const APP_FILES = [
   '/uc-merced-logo.png',
-  '/fonts/open-sans-regular.ttf',
-  '/fonts/open-sans-bold.ttf',
   '/',
   '/index.html',
   '/styles.css',
