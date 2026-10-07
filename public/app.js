@@ -12,7 +12,7 @@ let updatedAt = null;
 let lastCheckedAt = null;
 let loading = false;
 let dataError = false;
-let previousCounts = null;
+let previousLotsJson = null;
 
 function readPreferredLot() {
   try {
@@ -89,7 +89,6 @@ function renderDashboard() {
   // A temporary empty file or missing lot must not erase the saved preference.
   const preferredLotExists = lots.some((lot) => lot.id === preferredLotId);
   selectLot(preferredLotExists ? preferredLotId : lots[0]?.id);
-  updateConnectionStatus();
 }
 
 async function fetchJson(path) {
@@ -111,25 +110,22 @@ async function loadParking() {
       throw new Error('Older parking update');
     }
     dataError = false;
-    const counts = JSON.stringify(snapshot.lots);
+    const lotsJson = JSON.stringify(snapshot.lots);
     updatedAt = snapshot.updatedAt;
     // Keep the current lot buttons and selection when the counts have not changed.
-    if (counts !== previousCounts) {
+    if (lotsJson !== previousLotsJson) {
       lots = snapshot.lots;
-      previousCounts = counts;
+      previousLotsJson = lotsJson;
       renderDashboard();
-    } else {
-      updateConnectionStatus();
     }
   } catch {
     dataError = true;
-    updateConnectionStatus();
   } finally {
     // Record completed attempts, even if the file is missing or unchanged.
     lastCheckedAt = Date.now();
-    updateConnectionStatus();
     loading = false;
     byId('refresh').disabled = false;
+    updateConnectionStatus();
   }
 }
 

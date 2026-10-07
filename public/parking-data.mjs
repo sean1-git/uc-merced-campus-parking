@@ -1,10 +1,13 @@
+const STALE_AFTER_MS = 60000;
+const ALLOWED_CLOCK_SKEW_MS = 5000;
+
 // Each JSON file contains a complete snapshot, not individual changes.
 export function readSnapshot(data, now = Date.now()) {
   if (!data || !Array.isArray(data.lots)) {
     throw new Error('Expected a parking snapshot');
   }
   const updatedAt = Date.parse(data.updated_at);
-  if (!Number.isFinite(updatedAt) || updatedAt > now + 5000) {
+  if (!Number.isFinite(updatedAt) || updatedAt > now + ALLOWED_CLOCK_SKEW_MS) {
     throw new Error('Invalid update time');
   }
   const lotIds = new Set();
@@ -49,7 +52,7 @@ export function getDataStatus({updatedAt, failed, online, now = Date.now()}) {
         : 'You are offline. Showing last reported counts, which may be outdated. Updates resume when you reconnect.',
     };
   }
-  if (now - updatedAt > 60000) {
+  if (now - updatedAt > STALE_AFTER_MS) {
     return {
       state: 'outdated',
       label: 'Outdated counts',
