@@ -27,7 +27,7 @@ Use Python 3.10 or newer:
 python app.py
 ```
 
-Open [localhost:8000](http://127.0.0.1:8000/).  Installation requires HTTPS or localhost. The Python server is for local development.
+Open [localhost:8000](http://127.0.0.1:8000/). Installation requires HTTPS or localhost. The Python server is for local development.
 
 <img width="1060" height="1404" alt="image" src="https://github.com/user-attachments/assets/354d0f35-da6d-4026-b4a1-aa807bcc3c11" />
 

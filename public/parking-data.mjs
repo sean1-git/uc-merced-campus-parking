@@ -11,7 +11,8 @@ export function readSnapshot(data, now = Date.now()) {
     throw new Error('Invalid update time');
   }
   const lotIds = new Set();
-  const lots = data.lots.map((lot) => {
+  const lots = [];
+  for (const lot of data.lots) {
     if (!lot || typeof lot.id !== 'string' || !lot.id.trim() || lotIds.has(lot.id) ||
         typeof lot.name !== 'string' || !lot.name.trim() || !Array.isArray(lot.spaces)) {
       throw new Error('Invalid or duplicate lot');
@@ -25,10 +26,20 @@ export function readSnapshot(data, now = Date.now()) {
         throw new Error('Invalid or duplicate space');
       }
       spaceIds.add(space.id);
-      counts[space.status] += 1;
+      if (space.status === 'available') {
+        counts.available += 1;
+      } else {
+        counts.occupied += 1;
+      }
     }
-    return {id: lot.id, name: lot.name, capacity: lot.spaces.length, ...counts};
-  });
+    lots.push({
+      id: lot.id,
+      name: lot.name,
+      capacity: lot.spaces.length,
+      available: counts.available,
+      occupied: counts.occupied,
+    });
+  }
   return {updatedAt, lots};
 }
 

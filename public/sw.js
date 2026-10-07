@@ -1,5 +1,5 @@
 // Bump this version for asset changes so installed copies replace their cached UI.
-const CACHE_NAME = 'campus-parking-v30';
+const CACHE_NAME = 'campus-parking-v31';
 const APP_FILES = [
   '/uc-merced-logo.png',
   '/',
@@ -31,7 +31,10 @@ async function getAppFile(request) {
   const cache = await caches.open(CACHE_NAME);
   const path = new URL(request.url).pathname;
   const savedFile = await cache.match(path);
-  return savedFile || fetch(request);
+  if (savedFile) {
+    return savedFile;
+  }
+  return fetch(request);
 }
 
 self.addEventListener('install', (event) => {
