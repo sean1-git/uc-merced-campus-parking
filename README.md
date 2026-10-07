@@ -1,34 +1,4 @@
 # UC Merced Campus Parking
 
-A small parking PWA for UC Merced. With the number of complaints received about parking spaces, we decided to create an app that allows students to check available and occupied spots.
-
-The goal is to help students check parking before driving around campus looking for a space. The dashboard reads a supplied JSON file; the map is displayed separately through an iframe.
-
-**Current status:** The dashboard and JSON reader are built. The real parking data file and campus map link are still needed. No live campus availability is connected yet.
-
-## How it works
-
-1. Check the dashboard for available and occupied space counts.
-2. View the campus map once the iframe link is connected. Green represents available spaces; red represents occupied spaces.
-
-While the app is open, the dashboard checks /api/parking every second for counts and reloads the embedded map every minute. The Python endpoint currently reads a local parking JSON file; an external provider API is not connected yet.
-
-## Built with
-
-- **Python:** serves the page and reads the parking JSON file. No runtime packages are required.
-- **HTML, CSS, and JavaScript:** a simple responsive dashboard without React.
-- **PWA:** supports installation and caches the page shell. Fresh counts and the external map require a connection; counts are not saved between visits.
-
-## Run locally
-
-Use Python 3.10 or newer:
-
-```sh
-python app.py
-```
-
-Open [localhost:8000](http://127.0.0.1:8000/). Installation requires HTTPS or localhost. The Python server is for local development.
-
-<img width="1060" height="1404" alt="image" src="https://github.com/user-attachments/assets/9b44f30b-bfca-44c1-bf19-3c180e0fef38" />
 
 
