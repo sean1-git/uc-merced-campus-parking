@@ -30,5 +30,6 @@ python app.py
 
 Open [localhost:8000](http://127.0.0.1:8000/). On this Windows computer, `./run.ps1` also starts the app. Installation requires HTTPS or localhost. The Python server is for local development.
 
-<img width="1031" height="1404" alt="image" src="https://github.com/user-attachments/assets/6365e55f-19d0-431d-8695-4e6e5017566d" />
+<img width="1060" height="1404" alt="image" src="https://github.com/user-attachments/assets/49e93098-3ab9-4140-9eca-77a2d28fe9ed" />
+
 
