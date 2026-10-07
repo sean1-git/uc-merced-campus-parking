@@ -99,7 +99,7 @@ button:focus-visible, a:focus-visible {
   object-fit: contain;
 }
 
-.install, .refresh {
+.install {
   font-size: 14px;
 }
 
@@ -127,21 +127,6 @@ h2 {
   font-size: 18px;
   font-weight: 700;
   color: var(--navy);
-}
-
-.snapshot {
-  text-align: left;
-  font-size: 12px;
-  color: #52606a;
-}
-
-.snapshot p {
-  margin: 4px 0 8px;
-}
-
-.data-badge {
-  font-weight: bold;
-  color: #202b33;
 }
 
 .stats {
@@ -297,17 +282,4 @@ footer {
   .map-surface {
     height: 420px;
   }
-}
-
-/* Text labels distinguish states without relying on color alone. */
-.data-badge[data-state="failed"] {
-  color: #b02c2c;
-}
-
-.data-badge[data-state="outdated"] {
-  color: #795500;
-}
-
-.data-badge[data-state="current"] {
-  color: #24713d;
 }

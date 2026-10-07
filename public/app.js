@@ -1,6 +1,7 @@
-import {readSnapshot, getDataStatus} from './parking-data.mjs';
+import {readSnapshot} from './parking-data.mjs';
 
-const REFRESH_INTERVAL_MS = 60000;
+const REFRESH_INTERVAL_MS = 1000;
+const MAP_REFRESH_INTERVAL_MS = 60000;
 const REQUEST_TIMEOUT_MS = 6000;
 
 function byId(id) {
@@ -8,40 +9,12 @@ function byId(id) {
 }
 const frame = byId('campus-map');
 let updatedAt = null;
-let lastCheckedAt = null;
 let loading = false;
-let dataError = false;
 let previousCounts = null;
 
 function showNotice(message) {
   byId('connection').textContent = message;
   byId('connection').hidden = !message;
-}
-
-function updateConnectionStatus() {
-  const status = getDataStatus({updatedAt, failed: dataError, online: navigator.onLine});
-  const statusLabel = byId('data-status');
-  statusLabel.dataset.state = status.state;
-  if (status.state === 'waiting') {
-    statusLabel.hidden = true;
-    statusLabel.textContent = '';
-  } else {
-    statusLabel.hidden = false;
-    statusLabel.textContent = status.label;
-  }
-
-  if (updatedAt === null) {
-    byId('updated').textContent = 'Not received yet';
-  } else {
-    byId('updated').textContent = new Date(updatedAt).toLocaleString();
-  }
-  if (lastCheckedAt === null) {
-    byId('last-checked').textContent = 'Not yet';
-  } else {
-    byId('last-checked').textContent = new Date(lastCheckedAt).toLocaleString();
-  }
-  byId('refresh').hidden = !dataError;
-  showNotice(status.message);
 }
 
 function renderCounts(lots) {
@@ -78,24 +51,23 @@ async function loadParking() {
     return;
   }
   loading = true;
-  byId('refresh').disabled = true;
   try {
     const data = await fetchJson('/api/parking');
     const snapshot = readSnapshot(data);
     if (updatedAt !== null && snapshot.updatedAt < updatedAt) {
       throw new Error('Older parking update');
     }
-    dataError = false;
+    showNotice('');
     updatedAt = snapshot.updatedAt;
     renderCounts(snapshot.lots);
   } catch {
-    dataError = true;
+    // Hide old counts rather than presenting them as current after a failed check.
+    byId('total').textContent = '\u2014';
+    byId('occupied').textContent = '\u2014';
+    previousCounts = null;
+    showNotice('Parking counts unavailable. Retrying automatically.');
   } finally {
-    // A recent check does not imply fresh data or a successful request.
-    lastCheckedAt = Date.now();
     loading = false;
-    byId('refresh').disabled = false;
-    updateConnectionStatus();
   }
 }
 
@@ -117,19 +89,8 @@ async function connectMap() {
   }
 }
 
-byId('refresh').addEventListener('click', loadParking);
-window.addEventListener('offline', () => {
-  dataError = true;
-  updateConnectionStatus();
-});
-window.addEventListener('online', () => {
-  loadParking();
-  connectMap();
-});
-setInterval(() => {
-  updateConnectionStatus();
-  loadParking();
-}, REFRESH_INTERVAL_MS);
-updateConnectionStatus();
+// The iframe owns its map; reloading it does not change the dashboard counts.
+setInterval(connectMap, MAP_REFRESH_INTERVAL_MS);
+setInterval(loadParking, REFRESH_INTERVAL_MS);
 loadParking();
 connectMap();

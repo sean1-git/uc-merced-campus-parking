@@ -1,5 +1,5 @@
 // Bump this version for asset changes so installed copies replace their cached UI.
-const CACHE_NAME = 'campus-parking-v31';
+const CACHE_NAME = 'campus-parking-v34';
 const APP_FILES = [
   '/uc-merced-logo.png',
   '/',
