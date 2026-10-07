@@ -1,4 +1,1 @@
 # UC Merced Campus Parking
-
-
-

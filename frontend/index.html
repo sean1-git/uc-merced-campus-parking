@@ -6,12 +6,8 @@
     <meta name="theme-color" content="#0f2d52">
     <meta name="description" content="Campus parking availability from the connected campus map.">
     <title>Campus Parking · UC Merced</title>
-    <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="icon" href="/icon-32.png" type="image/png" sizes="32x32">
-    <link rel="apple-touch-icon" href="/icon-192.png">
     <link rel="stylesheet" href="/styles.css">
     <script type="module" src="/app.js"></script>
-    <script src="/pwa.js" defer></script>
   </head>
   <body>
     <a class="skip" href="#main">Skip to parking dashboard</a>
@@ -20,45 +16,27 @@
         <img class="brand-mark" src="/uc-merced-logo.png" alt="UC Merced" width="230" height="57">
         <span>
           Campus Parking
-          <small>UC Merced · Student prototype</small>
         </span>
       </a>
-      <button class="install" id="install">
-        Install app
-      </button>
     </header>
     <main id="main">
       <section class="intro">
         <div>
-          <h1>Parking availability</h1>
+          <h1>Parking Availability</h1>
+          <footer>
         </div>
       </section>
       <div class="notice" id="connection" role="status" hidden>
       </div>
-      <div class="notice" id="install-help" role="status" hidden>
-      </div>
       <section class="map-panel" aria-labelledby="map-heading">
         <div class="section-heading">
-          <h2 id="map-heading">Campus map</h2>
+          <h2 id="map-heading">Campus Map (Bellevue Lot)</h2>
         </div>
         <div class="map-surface">
           <div id="map-placeholder" class="map-placeholder">
             <strong>Campus map coming soon</strong>
           </div>
           <iframe id="campus-map" title="Campus parking map" referrerpolicy="no-referrer" hidden></iframe>
-        </div>
-        <div class="legend">
-          <span>
-            <i class="dot available">
-            </i>
-            Available
-          </span>
-          <span>
-            <i class="dot full">
-            </i>
-            Occupied
-          </span>
-
         </div>
         <section class="stats" aria-label="Parking overview">
           <article>
@@ -71,9 +49,7 @@
           </article>
         </section>
       </section>
-      <footer>
-        <span>Counts refresh every second. Map refreshes every minute.</span>
-      </footer>
+     
       <noscript>
         <p>This prototype needs JavaScript to load availability.</p>
       </noscript>

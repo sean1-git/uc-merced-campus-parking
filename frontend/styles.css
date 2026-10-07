@@ -8,7 +8,7 @@
 
 body {
   margin: 0;
-  color: #202b33;
+  color: var(--navy);
   background: #fff;
   font: 16px/1.5 Arial, sans-serif;
 }
@@ -99,10 +99,6 @@ button:focus-visible, a:focus-visible {
   object-fit: contain;
 }
 
-.install {
-  font-size: 14px;
-}
-
 main {
   max-width: 1208px;
   margin: auto;
@@ -131,26 +127,33 @@ h2 {
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
   gap: 16px;
-  margin-top: 20px;
+  grid-column: 2;
+  grid-row: 2;
+  align-self: start;
+  margin-top: 14px;
 }
 
 .stats article {
-  padding: 16px 20px;
+  padding: 0;
   border: 1px solid #aeb8c0;
   background: #fff;
 }
 
 .stat-label {
   display: block;
+  padding: 12px 20px;
+  background: var(--navy);
+  color: #fff;
   font-size: 14px;
   font-weight: bold;
 }
 
 .stats strong {
   display: block;
-  margin: 4px 0;
+  margin: 0;
+  padding: 16px 20px;
   font-size: 26px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -163,25 +166,16 @@ h2 {
   gap: 12px;
 }
 
-.available {
-  color: #24713d;
-}
-
-.full {
-  color: #b02c2c;
-}
-
-.dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  margin-right: 4px;
-  background: currentColor;
-  border-radius: 0;
-}
-
 .map-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  column-gap: 24px;
   min-width: 0;
+}
+
+.map-panel > .section-heading,
+.map-surface {
+  grid-column: 1;
 }
 
 .map-surface {
@@ -209,13 +203,6 @@ h2 {
   height: 100%;
   padding: 24px;
   text-align: center;
-}
-
-.legend {
-  display: flex;
-  gap: 20px;
-  padding-top: 10px;
-  font-size: 13px;
 }
 
 .notice {
@@ -256,22 +243,17 @@ footer {
     height: auto;
   }
 
-  .install {
-    padding: 8px;
-    font-size: 12px;
-    flex-shrink: 0;
-  }
-
   main {
     display: block;
     padding: 24px 16px;
   }
 
-  .stats article {
+  .stats strong {
     padding: 12px 8px;
   }
 
   .stat-label {
+    padding: 12px 8px;
     font-size: 13px;
   }
 
@@ -279,7 +261,24 @@ footer {
     font-size: 28px;
   }
 
+  .map-panel {
+    display: block;
+  }
+
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 20px;
+  }
+
   .map-surface {
     height: 420px;
   }
+}
+
+#total {
+  color: #24713d;
+}
+
+#occupied {
+  color: #b02c2c;
 }

@@ -7,12 +7,11 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parent
-PUBLIC = ROOT / 'public'
+PUBLIC = ROOT / 'frontend'
 DEFAULT_DATA_FILE = ROOT / 'parking.json'
 PUBLIC_ROUTES = {
     '/uc-merced-logo.png',
-    '/', '/index.html', '/styles.css', '/app.js', '/pwa.js', '/sw.js',
-    '/parking-data.mjs', '/manifest.webmanifest', '/icon-32.png', '/icon-192.png', '/icon-512.png',
+    '/', '/index.html', '/styles.css', '/app.js', '/sw.js',
 }
 
 class Handler(SimpleHTTPRequestHandler):

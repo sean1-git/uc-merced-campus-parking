@@ -58,16 +58,8 @@ class ParkingServerTests(unittest.TestCase):
                     self.assertEqual(error.exception.code, 503)
                     self.assertIn('error', json.load(error.exception))
 
-    def test_manifest_and_icons(self):
-        with urlopen(self.base + '/manifest.webmanifest') as response:
-            manifest = json.load(response)
-        self.assertEqual(manifest['display'], 'standalone')
-        for icon in manifest['icons']:
-            with urlopen(self.base + icon['src']) as response:
-                self.assertEqual(response.read(8), b'\x89PNG\r\n\x1a\n')
-
     def test_shell_assets(self):
-        for path in ['/', '/styles.css', '/app.js', '/pwa.js', '/sw.js', '/icon-32.png', '/parking-data.mjs']:
+        for path in ['/', '/styles.css', '/app.js', '/sw.js', '/uc-merced-logo.png']:
             with urlopen(self.base + path) as response:
                 self.assertEqual(response.status, 200)
                 self.assertTrue(response.read())
