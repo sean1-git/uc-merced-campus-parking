@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parent
 PUBLIC = ROOT / 'public'
 DEFAULT_DATA_FILE = ROOT / 'parking.json'
 PUBLIC_ROUTES = {
+    '/uc-merced-logo.png',
     '/fonts/open-sans-regular.ttf', '/fonts/open-sans-bold.ttf', '/fonts/OFL.txt',
     '/', '/index.html', '/styles.css', '/app.js', '/pwa.js', '/sw.js',
     '/parking-data.mjs', '/manifest.webmanifest', '/icon-32.png', '/icon-192.png', '/icon-512.png',
