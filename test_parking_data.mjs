@@ -55,7 +55,7 @@ test('recovery uses the observation time, even when counts are unchanged', () =>
   assert.equal(getDataStatus({updatedAt: now, failed: false, online: true, now}).state, 'current');
 });
 
-// Exercise the dashboard selection across page sessions without a live data file.
+// Isolate each visit so persistence tests cannot pass by reusing in-memory state.
 function selectionPage(storage, globals = {}) {
   const nodes = new Map();
   function element(id) {
@@ -71,7 +71,7 @@ function selectionPage(storage, globals = {}) {
     navigator: {onLine: true}, getDataStatus, readSnapshot, ...globals,
   });
   const source = readFileSync(new URL('./public/app.js', import.meta.url), 'utf8');
-  // Startup requests are outside this selection test.
+  // Exclude startup so tests control refresh timing and never read the real parking file.
   const functions = source.slice(source.indexOf('const REFRESH_INTERVAL_MS'), source.indexOf("byId('refresh').addEventListener"));
   vm.runInContext(functions, context);
   vm.runInContext('createLotCard = (lot) => lot;', context);

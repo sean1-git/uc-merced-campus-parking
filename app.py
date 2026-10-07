@@ -1,4 +1,4 @@
-"""Small, dependency-free parking PWA. Run: python app.py."""
+"""Serve the parking prototype without requiring third-party Python packages."""
 import argparse
 import json
 import os

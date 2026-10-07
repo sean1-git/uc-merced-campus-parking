@@ -65,7 +65,6 @@ button:focus-visible, a:focus-visible {
   top: 0;
 }
 
-/* Header */
 .topbar {
   display: flex;
   justify-content: space-between;
@@ -108,7 +107,6 @@ button:focus-visible, a:focus-visible {
   margin-left: 6px;
 }
 
-/* Dashboard */
 main {
   max-width: 1208px;
   margin: auto;
@@ -192,7 +190,6 @@ h2 {
   font-size: 12px;
 }
 
-/* Lots */
 main > * {
   grid-column: 2;
   min-width: 0;
@@ -315,7 +312,6 @@ main > * {
   background: #24713d;
 }
 
-/* Embedded map */
 .map-panel {
   min-width: 0;
 }
@@ -377,7 +373,6 @@ footer {
   font-size: 12px;
 }
 
-/* Phones */
 @media (max-width: 720px) {
   .topbar {
     padding: 12px 16px;

@@ -18,7 +18,7 @@ function readPreferredLot() {
   try {
     return localStorage.getItem(SELECTED_LOT_KEY);
   } catch {
-    // Selection still works if browser storage is disabled.
+    // Blocked storage must not prevent students from choosing a lot.
     return null;
   }
 }
@@ -28,7 +28,7 @@ function rememberLot(id) {
   try {
     localStorage.setItem(SELECTED_LOT_KEY, id);
   } catch {
-    // Keep the preference for this visit when it cannot be saved.
+    // The in-memory preference is enough when browser storage is blocked.
   }
 }
 
@@ -86,7 +86,7 @@ function renderDashboard() {
   byId('lots').replaceChildren(...lots.map(createLotCard));
   if (!lots.length) byId('lots').textContent = 'The file reports no parking lots.';
 
-  // A temporary empty file or missing lot must not erase the saved preference.
+  // A temporarily missing lot must not erase the student's saved choice.
   const preferredLotExists = lots.some((lot) => lot.id === preferredLotId);
   selectLot(preferredLotExists ? preferredLotId : lots[0]?.id);
 }
@@ -112,7 +112,7 @@ async function loadParking() {
     dataError = false;
     const lotsJson = JSON.stringify(snapshot.lots);
     updatedAt = snapshot.updatedAt;
-    // Keep the current lot buttons and selection when the counts have not changed.
+    // Avoid replacing focused buttons when a refresh has no visible changes.
     if (lotsJson !== previousLotsJson) {
       lots = snapshot.lots;
       previousLotsJson = lotsJson;
@@ -121,7 +121,7 @@ async function loadParking() {
   } catch {
     dataError = true;
   } finally {
-    // Record completed attempts, even if the file is missing or unchanged.
+    // A recent check does not imply fresh data or a successful request.
     lastCheckedAt = Date.now();
     loading = false;
     byId('refresh').disabled = false;

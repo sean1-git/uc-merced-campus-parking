@@ -1,9 +1,9 @@
-// PWA = an installable website that can also open offline.
 const installButton = document.getElementById('install');
 const installHelp = document.getElementById('install-help');
 let installPrompt = null;
 
 window.addEventListener('beforeinstallprompt', (event) => {
+  // Defer the browser prompt until the student chooses Install app.
   event.preventDefault();
   installPrompt = event;
 });

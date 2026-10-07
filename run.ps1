@@ -1,4 +1,4 @@
-# Use an installed Python, or the bundled runtime available on this computer.
+# WindowsApps entries can be Store shortcuts rather than usable Python runtimes.
 $parkingPython = $null
 foreach ($parkingCandidate in @('py', 'python')) {
     $parkingCommand = Get-Command $parkingCandidate -ErrorAction SilentlyContinue

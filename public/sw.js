@@ -1,4 +1,4 @@
-// Change the version when updating any file in APP_FILES.
+// Bump this version for asset changes so installed copies replace their cached UI.
 const CACHE_NAME = 'campus-parking-v26';
 const APP_FILES = [
   '/uc-merced-logo.png',
@@ -50,6 +50,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
 
+  // Cache only the UI; cached parking responses could present old counts as fresh.
   if (APP_FILES.includes(url.pathname)) {
     event.respondWith(getAppFile(request));
   }

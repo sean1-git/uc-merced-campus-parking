@@ -1,7 +1,7 @@
 const STALE_AFTER_MS = 60000;
 const ALLOWED_CLOCK_SKEW_MS = 5000;
 
-// Each JSON file contains a complete snapshot, not individual changes.
+// Reject the whole snapshot if any lot is invalid, so totals never hide missing data.
 export function readSnapshot(data, now = Date.now()) {
   if (!data || !Array.isArray(data.lots)) {
     throw new Error('Expected a parking snapshot');
@@ -32,7 +32,7 @@ export function readSnapshot(data, now = Date.now()) {
   return {updatedAt, lots};
 }
 
-// A failed request takes priority over age: the counts may also be outdated.
+// Show refresh failures first so students know why the counts cannot be trusted.
 export function getDataStatus({updatedAt, failed, online, now = Date.now()}) {
   if (updatedAt === null) {
     return {
