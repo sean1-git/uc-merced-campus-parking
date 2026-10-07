@@ -9,8 +9,7 @@ The goal is to help students check parking before driving around campus looking 
 ## How it works
 
 1. Check the dashboard for available and occupied space counts.
-2. Select a lot to see its counts and total spaces. The app remembers your choice in this browser and restores it when parking data loads on your next visit. If that lot is missing, it shows the first lot in the list without erasing your preference. Clearing browser storage resets the saved choice; if storage is blocked, selection still works for the current visit.
-3. View the campus map once the iframe link is connected. Green represents available spaces; red represents occupied spaces.
+2. View the campus map once the iframe link is connected. Green represents available spaces; red represents occupied spaces.
 
 While the app is open, the system checks the parking data file every minute and updates the availability counts when the JSON data changes. 
 

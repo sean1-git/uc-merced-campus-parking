@@ -55,8 +55,7 @@ test('recovery uses the observation time, even when counts are unchanged', () =>
   assert.equal(getDataStatus({updatedAt: now, failed: false, online: true, now}).state, 'current');
 });
 
-// Isolate each visit so persistence tests cannot pass by reusing in-memory state.
-function selectionPage(storage, globals = {}) {
+function dashboardPage(globals = {}) {
   const nodes = new Map();
   function element(id) {
     if (!nodes.has(id)) nodes.set(id, {
@@ -66,7 +65,6 @@ function selectionPage(storage, globals = {}) {
     return nodes.get(id);
   }
   const context = vm.createContext({
-    localStorage: storage,
     document: {getElementById: element, querySelectorAll: () => []},
     navigator: {onLine: true}, getDataStatus, readSnapshot, ...globals,
   });
@@ -74,47 +72,17 @@ function selectionPage(storage, globals = {}) {
   // Exclude startup so tests control refresh timing and never read the real parking file.
   const functions = source.slice(source.indexOf('const REFRESH_INTERVAL_MS'), source.indexOf("byId('refresh').addEventListener"));
   vm.runInContext(functions, context);
-  vm.runInContext('createLotCard = (lot) => lot;', context);
   return {
     run: (code) => vm.runInContext(code, context),
-    name: () => element('detail-name').textContent,
-    hidden: () => element('detail').hidden,
     text: (id) => element(id).textContent,
   };
 }
-
-const selectionLots = JSON.stringify([
-  {id: 'a', name: 'Lot A', available: 1, occupied: 0, capacity: 1},
-  {id: 'b', name: 'Lot B', available: 0, occupied: 1, capacity: 1},
-]);
-
-test('remembers a chosen lot on reopening and survives missing or empty data', () => {
-  const values = new Map();
-  const storage = {getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value)};
-  let page = selectionPage(storage);
-  page.run(`lots = ${selectionLots}; renderDashboard(); selectLot('b', true);`);
-  page = selectionPage(storage);
-  page.run(`lots = ${selectionLots}; renderDashboard();`);
-  assert.equal(page.name(), 'Lot B');
-  page.run('lots = lots.slice(0, 1); renderDashboard();');
-  assert.equal(page.name(), 'Lot A');
-  page.run('lots = []; renderDashboard();');
-  assert.equal(page.hidden(), true);
-  page.run(`lots = ${selectionLots}; renderDashboard();`);
-  assert.equal(page.name(), 'Lot B');
-});
-
-test('blocked storage does not interrupt lot selection or refresh', () => {
-  const page = selectionPage({getItem() {throw new Error('Blocked');}, setItem() {throw new Error('Blocked');}});
-  page.run(`lots = ${selectionLots}; renderDashboard(); selectLot('b', true); renderDashboard();`);
-  assert.equal(page.name(), 'Lot B');
-});
 
 test('last checked advances for unchanged data and failures without changing observation time', async () => {
   let clock = now;
   let fail = false;
   const data = snapshot();
-  const page = selectionPage({getItem: () => null}, {
+  const page = dashboardPage({
     Date: class extends Date { static now() { return clock; } },
     AbortSignal,
     fetch: async () => {
@@ -138,4 +106,14 @@ test('last checked advances for unchanged data and failures without changing obs
   assert.equal(page.text('updated'), reported);
   assert.equal(page.text('data-status'), 'Refresh failed');
   assert.equal(page.text('total'), 1);
+});
+
+test('dashboard totals include all lots and clear when a snapshot is empty', () => {
+  const page = dashboardPage();
+  page.run('renderCounts([{available: 2, occupied: 3}, {available: 4, occupied: 1}]);');
+  assert.equal(page.text('total'), 6);
+  assert.equal(page.text('occupied'), 4);
+  page.run('renderCounts([]);');
+  assert.equal(page.text('total'), 0);
+  assert.equal(page.text('occupied'), 0);
 });

@@ -1,5 +1,5 @@
 // Bump this version for asset changes so installed copies replace their cached UI.
-const CACHE_NAME = 'campus-parking-v26';
+const CACHE_NAME = 'campus-parking-v30';
 const APP_FILES = [
   '/uc-merced-logo.png',
   '/',
@@ -9,9 +9,6 @@ const APP_FILES = [
   '/parking-data.mjs',
   '/pwa.js',
   '/manifest.webmanifest',
-  '/icon-32.png',
-  '/icon-192.png',
-  '/icon-512.png',
 ];
 
 async function saveAppFiles() {

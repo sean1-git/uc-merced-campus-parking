@@ -10,10 +10,8 @@
     <link rel="icon" href="/icon-32.png" type="image/png" sizes="32x32">
     <link rel="apple-touch-icon" href="/icon-192.png">
     <link rel="stylesheet" href="/styles.css">
-    <script type="module" src="/app.js">
-    </script>
-    <script src="/pwa.js" defer>
-    </script>
+    <script type="module" src="/app.js"></script>
+    <script src="/pwa.js" defer></script>
   </head>
   <body>
     <a class="skip" href="#main">Skip to parking dashboard</a>
@@ -35,104 +33,56 @@
           <h1>Parking availability</h1>
         </div>
         <div class="snapshot">
-          <span class="data-badge" id="data-status" role="status">Waiting for first data</span>
+          <span class="data-badge" id="data-status" role="status" hidden></span>
           <p><strong>Data reported:</strong> <span id="updated">Not received yet</span></p>
           <p><strong>Last checked:</strong> <span id="last-checked">Not yet</span></p>
-          <button id="refresh" class="refresh">Refresh counts</button>
+          <button id="refresh" class="refresh" hidden>Retry</button>
         </div>
       </section>
       <div class="notice" id="connection" role="status" hidden>
       </div>
       <div class="notice" id="install-help" role="status" hidden>
       </div>
-      <div class="workspace">
-        <section class="lot-panel" aria-labelledby="lots-heading">
-          <div class="section-heading">
-            <h2 id="lots-heading">Choose a lot</h2>
-            <span id="lot-count">— lots</span>
+      <section class="map-panel" aria-labelledby="map-heading">
+        <div class="section-heading">
+          <h2 id="map-heading">Campus map</h2>
+        </div>
+        <div class="map-surface">
+          <div id="map-placeholder" class="map-placeholder">
+            <strong>Campus map coming soon</strong>
           </div>
-          <div id="lots" class="lots">
-            <p class="loading">No parking data yet.</p>
-          </div>
-          <div class="lot-detail" id="detail" aria-live="polite" hidden>
-            <div class="detail-title">
-              <span id="detail-name">
-              </span>
-            </div>
-            <p>
-              <strong id="detail-count">
-              </strong>
-              spaces available
-            </p>
-            <div class="meter" id="detail-meter" role="meter" aria-label="Available spaces" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0">
-              <span>
-              </span>
-            </div>
-            <p id="detail-note">
-            </p>
-          </div>
-        </section>
-        <section class="map-panel" aria-labelledby="map-heading">
-          <div class="section-heading">
-            <h2 id="map-heading">Campus map</h2>
-          </div>
-          <div class="map-surface">
-            <div id="map-placeholder" class="map-placeholder">
-              <strong>Campus map coming soon</strong>
-            </div>
-            <iframe id="campus-map" title="Campus parking map" referrerpolicy="no-referrer" hidden></iframe>
-          </div>
-          <div class="legend">
-            <span>
-              <i class="dot available">
-              </i>
-              Available
-            </span>
-            <span>
-              <i class="dot full">
-              </i>
-              Occupied
-            </span>
+          <iframe id="campus-map" title="Campus parking map" referrerpolicy="no-referrer" hidden></iframe>
+        </div>
+        <div class="legend">
+          <span>
+            <i class="dot available">
+            </i>
+            Available
+          </span>
+          <span>
+            <i class="dot full">
+            </i>
+            Occupied
+          </span>
 
-          </div>
-          <section class="stats" aria-label="Parking overview">
-            <article>
-              <span class="stat-label">Spaces available</span>
-              <strong id="total">—</strong>
-            </article>
-            <article>
-              <span class="stat-label">Spaces occupied</span>
-              <strong id="occupied">—</strong>
-            </article>
-          </section>
+        </div>
+        <section class="stats" aria-label="Parking overview">
+          <article>
+            <span class="stat-label">Spaces available</span>
+            <strong id="total">—</strong>
+          </article>
+          <article>
+            <span class="stat-label">Spaces occupied</span>
+            <strong id="occupied">—</strong>
+          </article>
         </section>
-      </div>
+      </section>
       <footer>
         <span>Checks for updates every minute.</span>
       </footer>
       <noscript>
-        <p>This prototype needs JavaScript to load availability and select lots.</p>
+        <p>This prototype needs JavaScript to load availability.</p>
       </noscript>
     </main>
-    <template id="lot-card-template">
-      <button class="lot-card" aria-pressed="false">
-        <span>
-          <span class="lot-title">
-          </span>
-          <span class="lot-zone">
-          </span>
-        </span>
-        <span class="lot-count">
-          <strong>
-          </strong>
-          <span class="lot-status">
-            <i class="dot" aria-hidden="true">
-            </i>
-            <span class="status-label">
-            </span>
-          </span>
-        </span>
-      </button>
-    </template>
   </body>
 </html>

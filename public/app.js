@@ -2,35 +2,14 @@ import {readSnapshot, getDataStatus} from './parking-data.mjs';
 
 const REFRESH_INTERVAL_MS = 60000;
 const REQUEST_TIMEOUT_MS = 6000;
-const SELECTED_LOT_KEY = 'campus-parking-selected-lot';
 
 const byId = (id) => document.getElementById(id);
 const frame = byId('campus-map');
-let lots = [];
-let preferredLotId = readPreferredLot();
 let updatedAt = null;
 let lastCheckedAt = null;
 let loading = false;
 let dataError = false;
-let previousLotsJson = null;
-
-function readPreferredLot() {
-  try {
-    return localStorage.getItem(SELECTED_LOT_KEY);
-  } catch {
-    // Blocked storage must not prevent students from choosing a lot.
-    return null;
-  }
-}
-
-function rememberLot(id) {
-  preferredLotId = id;
-  try {
-    localStorage.setItem(SELECTED_LOT_KEY, id);
-  } catch {
-    // The in-memory preference is enough when browser storage is blocked.
-  }
-}
+let previousCounts = null;
 
 function showNotice(message) {
   byId('connection').textContent = message;
@@ -39,7 +18,8 @@ function showNotice(message) {
 
 function updateConnectionStatus() {
   const status = getDataStatus({updatedAt, failed: dataError, online: navigator.onLine});
-  byId('data-status').textContent = status.label;
+  byId('data-status').hidden = status.state === 'waiting';
+  byId('data-status').textContent = status.state === 'waiting' ? '' : status.label;
   byId('data-status').dataset.state = status.state;
   byId('updated').textContent = updatedAt === null
     ? 'Not received yet'
@@ -47,48 +27,22 @@ function updateConnectionStatus() {
   byId('last-checked').textContent = lastCheckedAt === null
     ? 'Not yet'
     : new Date(lastCheckedAt).toLocaleString();
+  byId('refresh').hidden = !dataError;
   showNotice(status.message);
 }
 
-function selectLot(id, remember = false) {
-  const lot = lots.find((item) => item.id === id);
-  byId('detail').hidden = !lot;
-  document.querySelectorAll('.lot-card').forEach((card) => {
-    card.setAttribute('aria-pressed', String(card.dataset.lot === id));
-  });
-  if (!lot) return;
-  if (remember) rememberLot(id);
-  byId('detail-name').textContent = lot.name;
-  byId('detail-count').textContent = lot.available;
-  byId('detail-note').textContent = `${lot.occupied} occupied · ${lot.capacity} total spaces`;
-  const meter = byId('detail-meter');
-  meter.setAttribute('aria-valuemax', String(Math.max(1, lot.capacity)));
-  meter.setAttribute('aria-valuenow', String(lot.available));
-  meter.firstElementChild.style.width = `${lot.capacity ? lot.available / lot.capacity * 100 : 0}%`;
-}
+function renderCounts(lots) {
+  const counts = lots.reduce((total, lot) => ({
+    available: total.available + lot.available,
+    occupied: total.occupied + lot.occupied,
+  }), {available: 0, occupied: 0});
 
-function createLotCard(lot) {
-  const card = byId('lot-card-template').content.firstElementChild.cloneNode(true);
-  card.dataset.lot = lot.id;
-  card.querySelector('.lot-title').textContent = lot.name;
-  card.querySelector('.lot-zone').textContent = `${lot.occupied} occupied`;
-  card.querySelector('strong').textContent = lot.available;
-  card.querySelector('.status-label').textContent = 'available';
-  card.querySelector('.lot-count').classList.toggle('available', lot.available > 0);
-  card.addEventListener('click', () => selectLot(lot.id, true));
-  return card;
-}
-
-function renderDashboard() {
-  byId('total').textContent = lots.reduce((sum, lot) => sum + lot.available, 0);
-  byId('occupied').textContent = lots.reduce((sum, lot) => sum + lot.occupied, 0);
-  byId('lot-count').textContent = `${lots.length} lots`;
-  byId('lots').replaceChildren(...lots.map(createLotCard));
-  if (!lots.length) byId('lots').textContent = 'The file reports no parking lots.';
-
-  // A temporarily missing lot must not erase the student's saved choice.
-  const preferredLotExists = lots.some((lot) => lot.id === preferredLotId);
-  selectLot(preferredLotExists ? preferredLotId : lots[0]?.id);
+  // Unchanged counts do not need another DOM update.
+  if (counts.available === previousCounts?.available &&
+      counts.occupied === previousCounts?.occupied) return;
+  byId('total').textContent = counts.available;
+  byId('occupied').textContent = counts.occupied;
+  previousCounts = counts;
 }
 
 async function fetchJson(path) {
@@ -110,14 +64,8 @@ async function loadParking() {
       throw new Error('Older parking update');
     }
     dataError = false;
-    const lotsJson = JSON.stringify(snapshot.lots);
     updatedAt = snapshot.updatedAt;
-    // Avoid replacing focused buttons when a refresh has no visible changes.
-    if (lotsJson !== previousLotsJson) {
-      lots = snapshot.lots;
-      previousLotsJson = lotsJson;
-      renderDashboard();
-    }
+    renderCounts(snapshot.lots);
   } catch {
     dataError = true;
   } finally {
@@ -141,7 +89,7 @@ async function connectMap() {
     frame.hidden = false;
     byId('map-placeholder').hidden = true;
   } catch {
-    byId('map-placeholder').querySelector('p').textContent = 'Map unavailable. Parking counts can still update independently.';
+    byId('map-placeholder').querySelector('strong').textContent = 'Map unavailable. Parking counts can still update independently.';
   }
 }
 
