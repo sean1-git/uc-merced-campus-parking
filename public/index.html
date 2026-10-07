@@ -22,52 +22,37 @@
         <img class="brand-mark" src="/icon-192.png" alt="Bobcat driving a parking car" width="60" height="60">
         <span>
           Campus Parking
-          <small>UC MERCED · STUDENT PROTOTYPE</small>
+          <small>UC Merced · Student prototype</small>
         </span>
       </a>
       <button class="install" id="install">
         Install app
-        <span aria-hidden="true">↗</span>
       </button>
     </header>
     <main id="main">
       <section class="intro">
         <div>
           <h1>Parking availability</h1>
-          <p class="subtitle">Choose a lot to view available spaces.</p>
         </div>
         <div class="snapshot">
           <span class="data-badge" id="data-status" role="status">Waiting for first data</span>
-          <p id="updated">Waiting for parking data</p>
-          <p id="last-checked">Last checked: not yet</p>
-          <button id="refresh" class="refresh">↻ Refresh counts</button>
+          <p><strong>Data reported:</strong> <span id="updated">Not received yet</span></p>
+          <p><strong>Last checked:</strong> <span id="last-checked">Not yet</span></p>
+          <button id="refresh" class="refresh">Refresh counts</button>
         </div>
       </section>
       <div class="notice" id="connection" role="status" hidden>
       </div>
       <div class="notice" id="install-help" role="status" hidden>
       </div>
-      <section class="stats" aria-label="Parking overview">
-        <article>
-          <span class="stat-label">Spaces available</span>
-          <strong id="total">—</strong>
-          <small>green spaces on the map</small>
-        </article>
-        <article>
-          <span class="stat-label">Spaces occupied</span>
-          <strong id="occupied">—</strong>
-          <small>red spaces on the map</small>
-        </article>
-      </section>
       <div class="workspace">
         <section class="lot-panel" aria-labelledby="lots-heading">
           <div class="section-heading">
             <h2 id="lots-heading">Choose a lot</h2>
             <span id="lot-count">— lots</span>
           </div>
-          <p class="section-note">Select a lot to view its counts.</p>
           <div id="lots" class="lots">
-            <p class="loading">Lots will appear when the parking data file is available.</p>
+            <p class="loading">No parking data yet.</p>
           </div>
           <div class="lot-detail" id="detail" aria-live="polite" hidden>
             <div class="detail-title">
@@ -90,12 +75,10 @@
         <section class="map-panel" aria-labelledby="map-heading">
           <div class="section-heading">
             <h2 id="map-heading">Campus map</h2>
-            <span class="map-tag">EMBEDDED MAP</span>
           </div>
           <div class="map-surface">
             <div id="map-placeholder" class="map-placeholder">
               <strong>Campus map coming soon</strong>
-              <p>The campus map will appear here when its link is added.</p>
             </div>
             <iframe id="campus-map" title="Campus parking map" referrerpolicy="no-referrer" hidden></iframe>
           </div>
@@ -112,10 +95,20 @@
             </span>
 
           </div>
+          <section class="stats" aria-label="Parking overview">
+            <article>
+              <span class="stat-label">Spaces available</span>
+              <strong id="total">—</strong>
+            </article>
+            <article>
+              <span class="stat-label">Spaces occupied</span>
+              <strong id="occupied">—</strong>
+            </article>
+          </section>
         </section>
       </div>
       <footer>
-        <span>Green means available. Red means occupied. The system checks the parking data file every minute and updates the availability counts when the JSON data changes.</span>
+        <span>Checks for updates every minute.</span>
       </footer>
       <noscript>
         <p>This prototype needs JavaScript to load availability and select lots.</p>

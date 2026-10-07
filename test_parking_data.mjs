@@ -123,7 +123,7 @@ test('last checked advances for unchanged data and failures without changing obs
     },
   });
   page.run('updateConnectionStatus();');
-  assert.equal(page.text('last-checked'), 'Last checked: not yet');
+  assert.equal(page.text('last-checked'), 'Not yet');
   await page.run('loadParking();');
   const reported = page.text('updated');
   assert.equal(page.run('lastCheckedAt'), now);

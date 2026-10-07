@@ -1,6 +1,8 @@
 // Change the version when updating any file in APP_FILES.
-const CACHE_NAME = 'campus-parking-v15';
+const CACHE_NAME = 'campus-parking-v22';
 const APP_FILES = [
+  '/fonts/open-sans-regular.ttf',
+  '/fonts/open-sans-bold.ttf',
   '/',
   '/index.html',
   '/styles.css',

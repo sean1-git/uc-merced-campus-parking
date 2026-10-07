@@ -42,11 +42,11 @@ function updateConnectionStatus() {
   byId('data-status').textContent = status.label;
   byId('data-status').dataset.state = status.state;
   byId('updated').textContent = updatedAt === null
-    ? 'No parking data received yet'
-    : `Data reported ${new Date(updatedAt).toLocaleString()}`;
+    ? 'Not received yet'
+    : new Date(updatedAt).toLocaleString();
   byId('last-checked').textContent = lastCheckedAt === null
-    ? 'Last checked: not yet'
-    : `Last checked ${new Date(lastCheckedAt).toLocaleString()}`;
+    ? 'Not yet'
+    : new Date(lastCheckedAt).toLocaleString();
   showNotice(status.message);
 }
 
