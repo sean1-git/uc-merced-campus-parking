@@ -59,7 +59,7 @@ class ParkingServerTests(unittest.TestCase):
                     self.assertIn('error', json.load(error.exception))
 
     def test_shell_assets(self):
-        for path in ['/', '/styles.css', '/app.js', '/sw.js', '/uc-merced-logo.png']:
+        for path in ['/', '/styles.css', '/app.js', '/uc-merced-logo.png']:
             with urlopen(self.base + path) as response:
                 self.assertEqual(response.status, 200)
                 self.assertTrue(response.read())

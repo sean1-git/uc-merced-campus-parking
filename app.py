@@ -11,7 +11,7 @@ PUBLIC = ROOT / 'frontend'
 DEFAULT_DATA_FILE = ROOT / 'parking.json'
 PUBLIC_ROUTES = {
     '/uc-merced-logo.png',
-    '/', '/index.html', '/styles.css', '/app.js', '/sw.js',
+    '/', '/index.html', '/styles.css', '/app.js',
 }
 
 class Handler(SimpleHTTPRequestHandler):
