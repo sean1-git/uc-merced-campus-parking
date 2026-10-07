@@ -438,3 +438,16 @@ footer {
     height: 330px;
   }
 }
+
+/* Text labels distinguish states without relying on color alone. */
+.data-badge[data-state="failed"] {
+  color: #b02c2c;
+}
+
+.data-badge[data-state="outdated"] {
+  color: #795500;
+}
+
+.data-badge[data-state="current"] {
+  color: #24713d;
+}

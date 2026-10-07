@@ -28,3 +28,33 @@ export function readSnapshot(data, now = Date.now()) {
   });
   return {updatedAt, lots};
 }
+
+// A failed request takes priority over age: the counts may also be outdated.
+export function getDataStatus({updatedAt, failed, online, now = Date.now()}) {
+  if (updatedAt === null) {
+    return {
+      state: 'waiting',
+      label: 'Waiting for first data',
+      message: online
+        ? 'No valid parking data has loaded yet. Counts will appear when the first file is available.'
+        : 'You are offline. Waiting for the first parking data file.',
+    };
+  }
+  if (failed || !online) {
+    return {
+      state: 'failed',
+      label: 'Refresh failed',
+      message: online
+        ? 'Could not refresh. Showing last reported counts, which may be outdated. Retrying every minute.'
+        : 'You are offline. Showing last reported counts, which may be outdated. Updates resume when you reconnect.',
+    };
+  }
+  if (now - updatedAt > 60000) {
+    return {
+      state: 'outdated',
+      label: 'Outdated counts',
+      message: 'The file loaded, but its parking data is more than a minute old. Check the reported time before relying on these counts.',
+    };
+  }
+  return {state: 'current', label: 'Data up to date', message: ''};
+}

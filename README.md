@@ -9,10 +9,16 @@ The goal is to help students check parking before driving around campus looking 
 ## How it works
 
 1. Check the dashboard for available and occupied space counts.
-2. Select a lot to see its counts and total spaces.
+2. Select a lot to see its counts and total spaces. The app remembers your choice in this browser and restores it when parking data loads on your next visit. If that lot is missing, it shows the first lot in the list without erasing your preference. Clearing browser storage resets the saved choice; if storage is blocked, selection still works for the current visit.
 3. View the campus map once the iframe link is connected. Green represents available spaces; red represents occupied spaces.
 
-While the app is open, the system checks the parking data file every minute and updates the availability counts when the JSON data changes. It also checks when the page opens, the connection returns, or the Refresh counts button is pressed. Unchanged counts keep the existing dashboard and lot selection. Missing or invalid data shows a warning. Counts older than 60 seconds are marked potentially outdated.
+While the app is open, the system checks the parking data file every minute and updates the availability counts when the JSON data changes. It also checks when the page opens, the connection returns, or the Refresh counts button is pressed. Unchanged counts keep the existing dashboard and lot selection. The connection label distinguishes three situations:
+
+- **Waiting for first data:** No valid file has loaded; counts stay as dashes.
+- **Refresh failed:** A later request failed or the device is offline; the last valid counts stay visible with a warning.
+- **Outdated counts:** The file loaded successfully, but its observation timestamp is more than 60 seconds old.
+
+Fresh valid data restores **Data up to date**. “Data reported” shows the observation timestamp from the JSON. “Last checked” shows when this app last finished checking the file, including unchanged data and failed attempts. A recent check does not mean the parking data is fresh; the connection label shows whether the check succeeded or the counts are outdated. Check times reset when the page is reopened.
 
 ## Built with
 
@@ -66,7 +72,7 @@ test_parking_data.mjs   Parking data validation tests
 ## What's next
 
 1. Connect the supplied JSON and actual campus map.
-2. Verify that dashboard counts match the map, including full lots and delayed updates.
+2. If a real parking JSON file is added, adapt the reader to its format and run the integration checks below. Then verify that dashboard counts match the map.
 3. Test installation and usability on phones.
 4. Test traffic and measure server response times before deciding whether polling or hosting needs changes.
 5. Deploy with HTTPS after the data connection is verified.
@@ -82,3 +88,16 @@ node --check public/app.js
 ```
 
 Tests cover file updates, missing or invalid JSON, status validation, and public server routes. After editing browser files, increase the cache version in `public/sw.js` so installed copies receive the update.
+
+## Future JSON integration checks
+
+Only implement and run these integration checks if a real parking JSON file is added. They are deferred until its format is known; if JSON is not used, skip this step.
+
+Use temporary JSON files and a separate test server to verify:
+
+- **Full lot:** All spaces occupied; available count is zero.
+- **Empty lot:** All spaces available; occupied count is zero.
+- **Changed counts:** Replacing the test file updates the dashboard on its next check.
+- **Recovery:** Invalid JSON keeps the last valid counts with a refresh-failed message; replacing it with fresh valid JSON updates the counts and clears the error.
+
+Keep test files outside the normal data path. Point only the test server at them, never replace the real `parking.json`, and remove temporary files after the test. The existing server and validation tests remain separate from these future dashboard integration checks.

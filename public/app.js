@@ -1,39 +1,63 @@
-import {readSnapshot} from './parking-data.mjs';
+import {readSnapshot, getDataStatus} from './parking-data.mjs';
 
 const REFRESH_INTERVAL_MS = 60000;
 const REQUEST_TIMEOUT_MS = 6000;
-const STALE_AFTER_MS = 60000;
+const SELECTED_LOT_KEY = 'campus-parking-selected-lot';
 
 const byId = (id) => document.getElementById(id);
 const frame = byId('campus-map');
 let lots = [];
-let selectedLotId = null;
+let preferredLotId = readPreferredLot();
 let updatedAt = null;
+let lastCheckedAt = null;
 let loading = false;
 let dataError = false;
 let previousCounts = null;
+
+function readPreferredLot() {
+  try {
+    return localStorage.getItem(SELECTED_LOT_KEY);
+  } catch {
+    // Selection still works if browser storage is disabled.
+    return null;
+  }
+}
+
+function rememberLot(id) {
+  preferredLotId = id;
+  try {
+    localStorage.setItem(SELECTED_LOT_KEY, id);
+  } catch {
+    // Keep the preference for this visit when it cannot be saved.
+  }
+}
 
 function showNotice(message) {
   byId('connection').textContent = message;
   byId('connection').hidden = !message;
 }
 
-function updateFreshness() {
-  if (updatedAt === null) return;
-  const stale = !navigator.onLine || dataError || Date.now() - updatedAt > STALE_AFTER_MS;
-  byId('data-status').textContent = stale ? 'Last reported counts' : 'Receiving data';
-  byId('updated').textContent = `Reported ${new Date(updatedAt).toLocaleString()}`;
-  if (!dataError) showNotice(stale ? 'These counts may be outdated. Waiting for a new parking update.' : '');
+function updateConnectionStatus() {
+  const status = getDataStatus({updatedAt, failed: dataError, online: navigator.onLine});
+  byId('data-status').textContent = status.label;
+  byId('data-status').dataset.state = status.state;
+  byId('updated').textContent = updatedAt === null
+    ? 'No parking data received yet'
+    : `Data reported ${new Date(updatedAt).toLocaleString()}`;
+  byId('last-checked').textContent = lastCheckedAt === null
+    ? 'Last checked: not yet'
+    : `Last checked ${new Date(lastCheckedAt).toLocaleString()}`;
+  showNotice(status.message);
 }
 
-function selectLot(id) {
-  selectedLotId = id;
+function selectLot(id, remember = false) {
   const lot = lots.find((item) => item.id === id);
   byId('detail').hidden = !lot;
   document.querySelectorAll('.lot-card').forEach((card) => {
     card.setAttribute('aria-pressed', String(card.dataset.lot === id));
   });
   if (!lot) return;
+  if (remember) rememberLot(id);
   byId('detail-name').textContent = lot.name;
   byId('detail-count').textContent = lot.available;
   byId('detail-note').textContent = `${lot.occupied} occupied · ${lot.capacity} total spaces`;
@@ -51,7 +75,7 @@ function createLotCard(lot) {
   card.querySelector('strong').textContent = lot.available;
   card.querySelector('.status-label').textContent = 'available';
   card.querySelector('.lot-count').classList.toggle('available', lot.available > 0);
-  card.addEventListener('click', () => selectLot(lot.id));
+  card.addEventListener('click', () => selectLot(lot.id, true));
   return card;
 }
 
@@ -62,9 +86,10 @@ function renderDashboard() {
   byId('lots').replaceChildren(...lots.map(createLotCard));
   if (!lots.length) byId('lots').textContent = 'The file reports no parking lots.';
 
-  const selectedLotExists = lots.some((lot) => lot.id === selectedLotId);
-  selectLot(selectedLotExists ? selectedLotId : lots[0]?.id);
-  updateFreshness();
+  // A temporary empty file or missing lot must not erase the saved preference.
+  const preferredLotExists = lots.some((lot) => lot.id === preferredLotId);
+  selectLot(preferredLotExists ? preferredLotId : lots[0]?.id);
+  updateConnectionStatus();
 }
 
 async function fetchJson(path) {
@@ -94,15 +119,15 @@ async function loadParking() {
       previousCounts = counts;
       renderDashboard();
     } else {
-      updateFreshness();
+      updateConnectionStatus();
     }
   } catch {
     dataError = true;
-    byId('data-status').textContent = updatedAt === null ? 'Waiting for data' : 'Last reported counts';
-    showNotice(updatedAt === null
-      ? 'Waiting for a valid parking data file. Retrying automatically.'
-      : 'Could not update parking data. Displayed counts may be outdated. Retrying automatically.');
+    updateConnectionStatus();
   } finally {
+    // Record completed attempts, even if the file is missing or unchanged.
+    lastCheckedAt = Date.now();
+    updateConnectionStatus();
     loading = false;
     byId('refresh').disabled = false;
   }
@@ -127,16 +152,16 @@ async function connectMap() {
 byId('refresh').addEventListener('click', loadParking);
 window.addEventListener('offline', () => {
   dataError = true;
-  updateFreshness();
-  showNotice('You are offline. Any displayed parking counts may be outdated.');
+  updateConnectionStatus();
 });
 window.addEventListener('online', () => {
   loadParking();
   connectMap();
 });
 setInterval(() => {
-  updateFreshness();
+  updateConnectionStatus();
   loadParking();
 }, REFRESH_INTERVAL_MS);
+updateConnectionStatus();
 loadParking();
 connectMap();
