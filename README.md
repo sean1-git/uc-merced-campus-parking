@@ -1,6 +1,6 @@
 # UC Merced Campus Parking
 
-A small parking PWA for UC Merced. Students can check available and occupied spaces, select a lot, and view an embedded campus map.
+A small parking PWA for UC Merced. With the number of complaints received about parking spaces, we decided to create an app that allows students to check available and occupied spots.
 
 The goal is to help students check parking before driving around campus looking for a space. The dashboard reads a supplied JSON file; the map is displayed separately through an iframe.
 
