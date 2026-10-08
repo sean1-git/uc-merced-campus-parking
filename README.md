@@ -1,4 +1,4 @@
 # UC Merced Campus Parking
 
 
-A PWA for students to check available parking.
+An app for students to check available parking.
