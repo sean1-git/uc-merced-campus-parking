@@ -1,11 +1,13 @@
 import { Text, View } from "react-native";
 
-const Insights = () => {
+
+const Map = () => {
   return (
     <View>
-      <Text>Insights</Text>
+      <Text>Campus Map</Text>
+   
     </View>
   );
 };
 
-export default Insights;
+export default Map;
