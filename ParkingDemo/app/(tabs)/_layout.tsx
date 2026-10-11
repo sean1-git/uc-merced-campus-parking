@@ -75,9 +75,9 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="map"
+        name="lot"
         options={{
-          title: "Map",
+          title: "Lots",
           tabBarIcon: ({ color }) => (
             <Ionicons name="location-sharp" size={28} color={color} />
           ),
