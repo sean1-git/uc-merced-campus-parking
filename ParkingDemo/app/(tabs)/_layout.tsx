@@ -1,8 +1,7 @@
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
 
@@ -104,9 +103,6 @@ export default function TabLayout() {
         }}
       />
 
-      {/* Hide your other routes from the navigation bar */}
-      <Tabs.Screen name="settings" options={{ href: null }} />
-      <Tabs.Screen name="subscriptions/[id]" options={{ href: null }} />
     </Tabs>
   );
 }

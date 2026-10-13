@@ -1,6 +1,4 @@
-import "@/global.css";
-import {ImageBackground,Text,View,Pressable,ScrollView,StyleSheet,Alert,} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Text, View, Pressable, ScrollView, StyleSheet, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as WebBrowser from "expo-web-browser";
 import { Link } from "expo-router";
