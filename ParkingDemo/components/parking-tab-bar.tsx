@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "expo-router/tabs";
 import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
-import Svg, { Path } from "react-native-svg";
+import Svg, { ClipPath, Defs, Path, Rect } from "react-native-svg";
 
 const colors = {
   bar: "#101010",
@@ -30,18 +30,13 @@ export function ParkingTabBar({
 
   // The dip is part of the bar itself, leaving a real curved cutout.
   const outline = `
-    M 8 24
+    M 0 24
     H ${center - shoulder}
     C ${center - shoulder + 12} 24, ${center - 38} 69, ${center} 69
     C ${center + 38} 69, ${center + shoulder - 12} 24, ${center + shoulder} 24
-    H ${width - 8}
-    Q ${width} 24, ${width} 32
-    V 72
-    Q ${width} 104, ${width - 32} 104
-    H 32
-    Q 0 104, 0 72
-    V 32
-    Q 0 24, 8 24
+    H ${width}
+    V 88
+    H 0
     Z
   `;
 
@@ -63,12 +58,21 @@ export function ParkingTabBar({
         {width > 0 && (
           <Svg
             width={width}
-            height={84}
+            height={88}
             style={StyleSheet.absoluteFill}
             pointerEvents="none"
             accessible={false}
           >
-            <Path d={outline} fill={colors.bar} />
+            <Defs>
+              <ClipPath id="roundedTabBar">
+                <Rect x={0} y={24} width={width} height={64} rx={32} />
+              </ClipPath>
+            </Defs>
+            <Path
+              d={outline}
+              fill={colors.bar}
+              clipPath="url(#roundedTabBar)"
+            />
           </Svg>
         )}
 
@@ -133,13 +137,13 @@ const styles = StyleSheet.create({
   bar: {
     width: "100%",
     maxWidth: 440,
-    height: 54,
+    height: 88,
     flexDirection: "row",
   },
   tab: {
     flex: 1,
     alignItems: "center",
-    height: 54,
+    height: 88,
   },
   icon: {
     marginTop: 27,
