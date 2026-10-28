@@ -1,7 +1,8 @@
 import { Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
+
+import { ParkingTabBar } from "../../components/parking-tab-bar";
 
 export default function TabLayout() {
   return (
@@ -11,41 +12,12 @@ export default function TabLayout() {
     >
       <StatusBar style="dark" />
       <Tabs
-        screenOptions={{
-          headerShown: false,
-          tabBarActiveTintColor: "#002856",
-          tabBarInactiveTintColor: "#8A8D8F",
-          tabBarStyle: {
-            backgroundColor: "#FFFFFF",
-            borderTopWidth: 1,
-            borderTopColor: "#E5E7EB",
-            elevation: 0,
-            shadowOpacity: 0,
-          },
-          tabBarLabelStyle: { fontSize: 12, fontWeight: "600" },
-        }}
+        screenOptions={{ headerShown: false }}
+        tabBar={(props) => <ParkingTabBar {...props} />}
       >
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: "Home",
-            tabBarIcon: ({ color }) => <Ionicons name="home" size={28} color={color} />,
-          }}
-        />
-        <Tabs.Screen
-          name="lot"
-          options={{
-            title: "Lots",
-            tabBarIcon: ({ color }) => <Ionicons name="location-sharp" size={28} color={color} />,
-          }}
-        />
-        <Tabs.Screen
-          name="profile"
-          options={{
-            title: "Profile",
-            tabBarIcon: ({ color }) => <Ionicons name="person-circle" size={30} color={color} />,
-          }}
-        />
+        <Tabs.Screen name="index" options={{ title: "Home" }} />
+        <Tabs.Screen name="lot" options={{ title: "Lots" }} />
+        <Tabs.Screen name="profile" options={{ title: "Profile" }} />
       </Tabs>
     </SafeAreaView>
   );
