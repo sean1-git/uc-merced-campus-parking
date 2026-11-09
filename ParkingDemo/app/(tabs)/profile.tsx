@@ -1,13 +1,20 @@
-import { Text, View } from "react-native";
-
+import { StyleSheet, View } from "react-native";
+import Announcements from "../../components/announcements";
 
 const Settings = () => {
   return (
-    <View>
-      <Text>Profile</Text>
-   
+
+      <View style={styles.background}>
+     <Announcements />
     </View>
   );
-};
+}
+
+const styles = StyleSheet.create({
+   background: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
+});
 
 export default Settings;

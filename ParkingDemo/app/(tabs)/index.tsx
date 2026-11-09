@@ -6,6 +6,8 @@ export default function HomeScreen() {
   const { height } = useWindowDimensions();
   const photoHeight = Math.max(260, Math.min(height * 0.58, 540));
 
+
+
   return (
     <ScrollView
       style={styles.background}
@@ -46,10 +48,11 @@ export default function HomeScreen() {
           {"UC Merced\nCampus Parking"}
         </Text>
         <Text style={styles.description}>
-          No more worrying about parking availability. Find your spot, right at
-          your fingertips.
+          No more worrying about parking availability.
         </Text>
+
       </View>
+
     </ScrollView>
   );
 }

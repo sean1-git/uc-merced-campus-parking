@@ -5,8 +5,8 @@ import { Pressable, StyleSheet, View } from "react-native";
 import Svg, { ClipPath, Defs, Path, Rect } from "react-native-svg";
 
 const colors = {
-  bar: "#101010",
-  active: "#1014ee",
+  bar: "#030303",
+  active: "#002856",
   inactive: "#929292",
 };
 
@@ -28,7 +28,6 @@ export function ParkingTabBar({
   const center = tabWidth * (state.index + 0.5);
   const shoulder = Math.min(50, Math.max(0, tabWidth / 2 - 10));
 
-  // The dip is part of the bar itself, leaving a real curved cutout.
   const outline = `
     M 0 24
     H ${center - shoulder}
